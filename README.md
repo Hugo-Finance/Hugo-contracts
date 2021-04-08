@@ -1,7 +1,13 @@
-# hugo-token
-ERC20 token with voting and transfer fee distribution mechanism
+# HUGO ecosystem contracts
 
-## Setup
+
+## Contracts
+### HUGO
+BEP20 token, implements fee distribution mechanic, gives voting power to users holding it.
+
+Address - `0xCE195c777e1ce96C30ebeC54C91d20417a068706`
+
+## Setup & Run tests
 1. Install dependencies
 
 ```
@@ -15,7 +21,7 @@ npm i
 }
 ```
 
-## Run tests
+### Run tests
 
 1. Run a local node
 ```
@@ -27,7 +33,7 @@ npx hardhat node
 npx hardhat test
 ```
 
-## Deploy
+### Deploy
 
 Deploy to mainnet or testnet with one command.
 ```
