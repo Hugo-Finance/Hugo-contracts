@@ -28,7 +28,7 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint public constant quorumVotes = 400000e9; // 400,000 = 4% of Hugo
+    uint public constant quorumVotes = 20000000e9; // 20 000 0000 = 1% of Hugo
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint public constant proposalMaxOperations = 10; // 10 actions
