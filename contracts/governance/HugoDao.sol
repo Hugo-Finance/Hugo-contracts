@@ -10,10 +10,10 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     string public constant name = "Hugo DAO";
 
     /// @notice The minimum setable proposal threshold
-    uint public constant MIN_PROPOSAL_THRESHOLD = 50000e18; // 50,000 Hugo
+    uint public constant MIN_PROPOSAL_THRESHOLD = 50000e9; // 50,000 Hugo
 
     /// @notice The maximum setable proposal threshold
-    uint public constant MAX_PROPOSAL_THRESHOLD = 100000e18; //100,000 Hugo
+    uint public constant MAX_PROPOSAL_THRESHOLD = 100000e9; //100,000 Hugo
 
     /// @notice The minimum setable voting period
     uint public constant MIN_VOTING_PERIOD = 5760; // About 24 hours
@@ -28,7 +28,7 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint public constant quorumVotes = 400000e18; // 400,000 = 4% of Hugo
+    uint public constant quorumVotes = 400000e9; // 400,000 = 4% of Hugo
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint public constant proposalMaxOperations = 10; // 10 actions
@@ -74,7 +74,7 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
       */
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before initiating
-        require(initialProposalId != 0, "HugoDao::propose: Hugo Dao not active");
+//        require(initialProposalId != 0, "HugoDao::propose: Hugo Dao not active");
         require(hugo.getPriorVotes(msg.sender, block.number - 1) > proposalThreshold, "HugoDao::propose: proposer votes below proposal threshold");
         require(targets.length == values.length && targets.length == signatures.length && targets.length == calldatas.length, "HugoDao::propose: proposal function information arity mismatch");
         require(targets.length != 0, "HugoDao::propose: must provide actions");
@@ -319,5 +319,9 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
         uint chainId;
         assembly { chainId := chainid() }
         return chainId;
+    }
+
+    function version() external virtual pure returns(uint8) {
+        return 1;
     }
 }

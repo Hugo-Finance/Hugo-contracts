@@ -1,6 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require('@nomiclabs/hardhat-ethers');
 require("@nomiclabs/hardhat-truffle5");
+require('@openzeppelin/hardhat-upgrades');
 
 const { mnemonic } = require('./secrets.json');
 
