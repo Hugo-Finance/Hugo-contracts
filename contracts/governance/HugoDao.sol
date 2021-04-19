@@ -10,10 +10,10 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     string public constant name = "Hugo DAO";
 
     /// @notice The minimum setable proposal threshold
-    uint public constant MIN_PROPOSAL_THRESHOLD = 50000e9; // 50,000 Hugo
+    uint public constant MIN_PROPOSAL_THRESHOLD = 1000000e9; // 1,000,000 Hugo
 
     /// @notice The maximum setable proposal threshold
-    uint public constant MAX_PROPOSAL_THRESHOLD = 100000e9; //100,000 Hugo
+    uint public constant MAX_PROPOSAL_THRESHOLD = 50000000e9; // 50,000,000 Hugo
 
     /// @notice The minimum setable voting period
     uint public constant MIN_VOTING_PERIOD = 5760; // About 24 hours
@@ -22,7 +22,7 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     uint public constant MAX_VOTING_PERIOD = 80640; // About 2 weeks
 
     /// @notice The min setable voting delay
-    uint public constant MIN_VOTING_DELAY = 1;
+    uint public constant MIN_VOTING_DELAY = 43200; // 12 hours
 
     /// @notice The max setable voting delay
     uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
@@ -200,7 +200,8 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
             return ProposalState.Pending;
         } else if (block.number <= proposal.endBlock) {
             return ProposalState.Active;
-        } else if (proposal.forVotes <= proposal.againstVotes || proposal.forVotes < quorumVotes) {
+        // 75%+ for votes or defeated
+        } else if (proposal.againstVotes * 3 > proposal.forVotes || proposal.forVotes < quorumVotes) {
             return ProposalState.Defeated;
         } else if (proposal.eta == 0) {
             return ProposalState.Succeeded;
