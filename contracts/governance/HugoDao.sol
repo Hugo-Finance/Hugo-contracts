@@ -320,4 +320,8 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
         assembly { chainId := chainid() }
         return chainId;
     }
+
+    function version() external virtual pure returns(uint8) {
+        return 1;
+    }
 }

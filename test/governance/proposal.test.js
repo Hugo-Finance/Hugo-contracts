@@ -4,8 +4,6 @@ const { expectRevert } = require('@openzeppelin/test-helpers');
 const {
   increaseTime,
   encodeParameters,
-  setTime,
-  mineBlockNumber,
   mineBlock,
 } = require('../Utils/Ethereum');
 
@@ -52,23 +50,23 @@ describe('Test governance proposal', () => {
     it('Setup callable implementation', async function() {
       hugoDao = await ethers.getContractAt('HugoDao', hugoDaoProxy.address);
     });
+  
+    it('Deploy target', async function() {
+      const Target = await ethers.getContractFactory('Target');
+    
+      target = await Target.deploy();
+      await target.deployed();
+    
+      logger.log(`Target: ${target.address}`);
+    
+      const state = await target.state();
+      expect(state).to.be.equal(0, 'Wrong target initial state');
+    });
   });
   
   describe('Test proposal lifecycle', async function() {
     let proposalId;
-
-    it('Deploy target', async function() {
-      const Target = await ethers.getContractFactory('Target');
-
-      target = await Target.deploy();
-      await target.deployed();
-      
-      logger.log(`Target: ${target.address}`);
-      
-      const state = await target.state();
-      expect(state).to.be.equal(0, 'Wrong target initial state');
-    });
-
+    
     it('Delegate votes', async function() {
       await hugoToken.delegate(accounts[0].address);
     });
