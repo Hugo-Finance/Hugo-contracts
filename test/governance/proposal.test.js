@@ -20,7 +20,8 @@ const VOTING_PERIOD = 28800;
 const TIMELOCK_DELAY = 86400;
 
 
-describe('Test governance proposal', () => {
+describe('Test governance proposal', async function() {
+  this.timeout(200000);
   before(async function() {
     accounts = await ethers.getSigners();
   });
