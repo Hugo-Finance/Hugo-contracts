@@ -16,16 +16,16 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     uint public constant MAX_PROPOSAL_THRESHOLD = 50000000e9; // 50,000,000 Hugo
 
     /// @notice The minimum setable voting period
-    uint public constant MIN_VOTING_PERIOD = 5760; // About 24 hours
+    uint public constant MIN_VOTING_PERIOD = 28800; // About 24 hours
 
     /// @notice The max setable voting period
-    uint public constant MAX_VOTING_PERIOD = 80640; // About 2 weeks
+    uint public constant MAX_VOTING_PERIOD = 403200; // About 2 weeks
 
     /// @notice The min setable voting delay
-    uint public constant MIN_VOTING_DELAY = 43200; // 12 hours
+    uint public constant MIN_VOTING_DELAY = 14400; // 12 hours
 
     /// @notice The max setable voting delay
-    uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
+    uint public constant MAX_VOTING_DELAY = 201600; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
     uint public constant quorumVotes = 20000000e9; // 20 000 0000 = 1% of Hugo

@@ -7,12 +7,17 @@ const {
   mineBlock,
 } = require('../Utils/Ethereum');
 
+
 let accounts;
 
 // Contracts
 let hugoToken, hugoDaoProxy, hugoDao, target;
 
 let proposal;
+const VOTING_DELAY = 14400;
+const PROPOSAL_THRESHOLD = "50000000000000000";
+const VOTING_PERIOD = 28800;
+const TIMELOCK_DELAY = 86400;
 
 
 describe('Test governance proposal', () => {
@@ -34,11 +39,11 @@ describe('Test governance proposal', () => {
       const HugoDaoProxy = await ethers.getContractFactory('HugoDaoProxy');
 
       hugoDaoProxy = await HugoDaoProxy.deploy(
-        hugoToken.address,
-        86400,
-        5760,
-        1,
-        "50000000000000",
+          hugoToken.address,
+          TIMELOCK_DELAY,
+          VOTING_PERIOD,
+          VOTING_DELAY,
+          PROPOSAL_THRESHOLD
       );
     
       await hugoDaoProxy.deployed();
@@ -102,14 +107,14 @@ describe('Test governance proposal', () => {
         const proposalBlock = await web3.eth.getBlockNumber();
 
         expect(savedProposal.startBlock)
-          .to.be.equal(proposalBlock + 1, 'Wrong proposal start block');
+          .to.be.equal(proposalBlock + VOTING_DELAY, 'Wrong proposal start block');
       });
   
       it('Check proposal end block', async function() {
         const proposalBlock = await web3.eth.getBlockNumber();
 
         expect(savedProposal.endBlock)
-          .to.be.equal(proposalBlock + 1 + (await hugoDao.votingPeriod()).toNumber(), 'Wrong proposal end block');
+          .to.be.equal(proposalBlock + VOTING_DELAY + (await hugoDao.votingPeriod()).toNumber(), 'Wrong proposal end block');
       });
       
       it('Check initial votes', async function() {
@@ -147,6 +152,22 @@ describe('Test governance proposal', () => {
     });
   
     describe('Confirm proposal', async function() {
+      it('Move time to the proposal start block', async function() {
+        const currentBlock = await web3.eth.getBlockNumber();
+
+        const {
+          startBlock
+        } = await hugoDao.proposals(proposalId);
+
+
+        for (const i of [...Array(startBlock - currentBlock + 1)]) {
+          await mineBlock();
+        }
+
+        expect((await web3.eth.getBlockNumber()))
+            .to.be.above(startBlock, 'Block number should be above proposal start block');
+      });
+
       it('Cast vote for proposal', async function() {
         await hugoDao.castVote(proposalId, 1);
       });
@@ -214,7 +235,7 @@ describe('Test governance proposal', () => {
             } = await web3.eth.getBlock('latest');
             
             await increaseTime(eta - currentTimestamp + 1);
-            
+
             expect((await web3.eth.getBlock('latest')).timestamp)
               .to.be.above(eta, 'network time should be above eta');
             
