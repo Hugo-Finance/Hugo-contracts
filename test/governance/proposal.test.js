@@ -6,6 +6,7 @@ const {
   encodeParameters,
   mineBlock,
 } = require('../Utils/Ethereum');
+const BigNumber = require('bignumber.js');
 
 
 let accounts;
@@ -13,7 +14,8 @@ let accounts;
 // Contracts
 let hugoToken, hugoDaoProxy, hugoDao, target;
 
-let proposal;
+let proposal, proposalId;
+
 const VOTING_DELAY = 14400;
 const PROPOSAL_THRESHOLD = "50000000000000000";
 const VOTING_PERIOD = 28800;
@@ -71,8 +73,6 @@ describe('Test governance proposal', async function() {
   });
   
   describe('Test proposal lifecycle', async function() {
-    let proposalId;
-    
     it('Delegate votes', async function() {
       await hugoToken.delegate(accounts[0].address);
     });
@@ -251,6 +251,140 @@ describe('Test governance proposal', async function() {
           });
         });
       });
+    });
+  });
+  
+  describe('Test proposal have less votes for than quorum', async function() {
+    let poorVoter;
+
+    it('Initialize proposal', async function() {
+      proposal = [
+        [target.address],
+        [0],
+        ["set(uint256)"],
+        [encodeParameters(['uint256'], [123])]
+      ];
+    
+      await hugoDao.propose(...proposal, 'description');
+      proposalId = await hugoDao.latestProposalIds(accounts[0].address);
+    });
+  
+    it('Delegate with too low token balance', async function() {
+      [,poorVoter] = accounts;
+      
+      const quorumVotes = await hugoDao.quorumVotes();
+
+      await hugoToken.transfer(poorVoter.address, quorumVotes.sub(1));
+      
+      await hugoToken.connect(poorVoter).delegate(poorVoter.address);
+    });
+    
+    it('Move time to the proposal start block', async function() {
+      const currentBlock = await web3.eth.getBlockNumber();
+  
+      const {
+        startBlock
+      } = await hugoDao.proposals(proposalId);
+  
+      for (const i of [...Array(startBlock - currentBlock + 1)]) {
+        await mineBlock();
+      }
+    });
+    
+    it('Vote for proposal', async function() {
+      await hugoDao.connect(poorVoter).castVote(proposalId, 1);
+    });
+    
+    it('Move time to the proposal end block', async function() {
+      const currentBlock = await web3.eth.getBlockNumber();
+  
+      const {
+        endBlock
+      } = await hugoDao.proposals(proposalId);
+  
+  
+      for (const i of [...Array(endBlock - currentBlock + 1)]) {
+        await mineBlock();
+      }
+    });
+    
+    it('Check proposal defeated', async function() {
+      const state = await hugoDao.state(proposalId);
+      const {
+        forVotes,
+        againstVotes
+      } = await hugoDao.proposals(proposalId);
+  
+      const quorumVotes = await hugoDao.quorumVotes();
+      
+      expect(state).to.be.equal(3, 'Wrong proposal state');
+      expect(againstVotes).to.be.equal(0, 'Wrong proposal against votes');
+      expect(forVotes).to.be.below(quorumVotes, 'For votes should be less than quorum');
+    });
+  });
+  
+  describe('Test proposal defeated if against votes 3 times higher than for votes', async function() {
+    let forVoter, againstVoter;
+  
+    it('Initialize proposal', async function() {
+      proposal = [
+        [target.address],
+        [0],
+        ["set(uint256)"],
+        [encodeParameters(['uint256'], [123])]
+      ];
+    
+      await hugoDao.propose(...proposal, 'description');
+      proposalId = await hugoDao.latestProposalIds(accounts[0].address);
+    });
+    
+    it('Transfer tokens', async function() {
+      [,,forVoter,againstVoter] = accounts;
+
+      // Transfer more than quorum votes so the amount of votes is sufficient
+      const quorumVotes = await hugoDao.quorumVotes();
+
+      await hugoToken.transfer(forVoter.address, new BigNumber(quorumVotes._hex).times(2).toFixed());
+      await hugoToken.transfer(againstVoter.address, new BigNumber(quorumVotes._hex).times(2).times(3).plus(3).toFixed());
+
+      await hugoToken.connect(forVoter).delegate(forVoter.address);
+      await hugoToken.connect(againstVoter).delegate(againstVoter.address);
+    });
+  
+    it('Move time to the proposal start block', async function() {
+      const currentBlock = await web3.eth.getBlockNumber();
+    
+      const {
+        startBlock
+      } = await hugoDao.proposals(proposalId);
+    
+      for (const i of [...Array(startBlock - currentBlock + 1)]) {
+        await mineBlock();
+      }
+    });
+  
+    it('Vote for proposal', async function() {
+      await hugoDao.connect(forVoter).castVote(proposalId, 1);
+      await hugoDao.connect(againstVoter).castVote(proposalId, 0);
+    });
+  
+    it('Move time to the proposal end block', async function() {
+      const currentBlock = await web3.eth.getBlockNumber();
+    
+      const {
+        endBlock
+      } = await hugoDao.proposals(proposalId);
+    
+    
+      for (const i of [...Array(endBlock - currentBlock + 1)]) {
+        await mineBlock();
+      }
+    });
+  
+    it('Check proposal defeated', async function() {
+      const state = await hugoDao.state(proposalId);
+    
+      expect(state).to.be.equal(3, 'Wrong proposal state');
     });
   });
 });
