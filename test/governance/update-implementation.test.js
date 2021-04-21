@@ -15,7 +15,14 @@ let hugoToken, hugoDaoProxy, hugoDao, hugoDao2;
 let proposal;
 
 
+const VOTING_DELAY = 14400;
+const PROPOSAL_THRESHOLD = "50000000000000000";
+const VOTING_PERIOD = 28800;
+const TIMELOCK_DELAY = 86400;
+
+
 describe('Test updating implementation', async function() {
+  this.timeout(200000);
   before(async function() {
     accounts = await ethers.getSigners();
   });
@@ -35,10 +42,10 @@ describe('Test updating implementation', async function() {
       
       hugoDaoProxy = await HugoDaoProxy.deploy(
         hugoToken.address,
-        86400,
-        5760,
-        1,
-        "50000000000000",
+        TIMELOCK_DELAY,
+        VOTING_PERIOD,
+        VOTING_DELAY,
+        PROPOSAL_THRESHOLD
       );
       
       await hugoDaoProxy.deployed();
@@ -80,8 +87,23 @@ describe('Test updating implementation', async function() {
       proposalId = await hugoDao.latestProposalIds(accounts[0].address);
     });
   
+    it('Move time to the proposal start block', async function() {
+      const currentBlock = await web3.eth.getBlockNumber();
+    
+      const {
+        startBlock
+      } = await hugoDao.proposals(proposalId);
+    
+    
+      for (const i of [...Array(startBlock - currentBlock + 1)]) {
+        await mineBlock();
+      }
+    
+      expect((await web3.eth.getBlockNumber()))
+        .to.be.above(startBlock, 'Block number should be above proposal start block');
+    });
+  
     it('Cast vote for proposal', async function() {
-      await mineBlock();
       await hugoDao.castVote(proposalId, 1);
     });
   
