@@ -28,7 +28,7 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     uint public constant MAX_VOTING_DELAY = 201600; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint public constant quorumVotes = 20000000e9; // 20 000 0000 = 1% of Hugo
+    uint public constant quorumVotes = 20000000e9; // 20 000 000 = 1% of Hugo
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint public constant proposalMaxOperations = 10; // 10 actions
@@ -69,10 +69,20 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
       * @param values Eth values for proposal calls
       * @param signatures Function signatures for proposal calls
       * @param calldatas Calldatas for proposal calls
+      * @param title String title of the proposal
       * @param description String description of the proposal
+      * @param category Category of the proposal
       * @return Proposal id of new proposal
       */
-    function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
+    function propose(
+        address[] memory targets,
+        uint[] memory values,
+        string[] memory signatures,
+        bytes[] memory calldatas,
+        string memory title,
+        string memory description,
+        ProposalCategory category
+    ) public returns (uint) {
         // Reject proposals before initiating
 //        require(initialProposalId != 0, "HugoDao::propose: Hugo Dao not active");
         require(hugo.getPriorVotes(msg.sender, block.number - 1) > proposalThreshold, "HugoDao::propose: proposer votes below proposal threshold");
@@ -80,11 +90,14 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
         require(targets.length != 0, "HugoDao::propose: must provide actions");
         require(targets.length <= proposalMaxOperations, "HugoDao::propose: too many actions");
 
+        // using this to avoid stack too deep error
+        {
         uint latestProposalId = latestProposalIds[msg.sender];
         if (latestProposalId != 0) {
             ProposalState proposersLatestProposalState = state(latestProposalId);
             require(proposersLatestProposalState != ProposalState.Active, "HugoDao::propose: one live proposal per proposer, found an already active proposal");
             require(proposersLatestProposalState != ProposalState.Pending, "HugoDao::propose: one live proposal per proposer, found an already pending proposal");
+        }
         }
 
         uint startBlock = block.number + votingDelay;
@@ -108,10 +121,11 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
             executed: false
         });
 
+
         proposals[newProposal.id] = newProposal;
         latestProposalIds[newProposal.proposer] = newProposal.id;
 
-        emit ProposalCreated(newProposal.id, msg.sender, targets, values, signatures, calldatas, startBlock, endBlock, description);
+        emit ProposalCreated(newProposal.id, msg.sender, targets, values, signatures, calldatas, startBlock, endBlock, title, description, category);
         return newProposal.id;
     }
 
@@ -191,7 +205,7 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
       * @param proposalId The id of the proposal
       * @return Proposal state
       */
-    function state(uint proposalId) public view returns (ProposalState) {
+    function state(uint proposalId) public view virtual returns (ProposalState) {
         require(proposalCount >= proposalId && proposalId > initialProposalId, "HugoDao::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
         if (proposal.canceled) {
