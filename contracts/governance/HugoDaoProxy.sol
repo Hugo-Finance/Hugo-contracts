@@ -3,7 +3,7 @@
 pragma solidity ^0.8.2;
 pragma experimental ABIEncoderV2;
 
-import "./IDao.sol";
+import "../interfaces/IDao.sol";
 import "../proxy/ERC1967Proxy.sol";
 import "../utils/Timelock.sol";
 import "./HugoDao.sol";

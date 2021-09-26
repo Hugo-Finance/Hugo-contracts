@@ -3,7 +3,7 @@
 pragma solidity ^0.8.2;
 pragma experimental ABIEncoderV2;
 
-import "./IDao.sol";
+import "../interfaces/IDao.sol";
 
 contract HugoDao is HugoDaoStorageV1, DaoEvents {
     /// @notice The name of this contract
@@ -28,7 +28,7 @@ contract HugoDao is HugoDaoStorageV1, DaoEvents {
     uint public constant MAX_VOTING_DELAY = 201600; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint public constant quorumVotes = 20000000e9; // 20 000 000 = 1% of Hugo
+    uint public constant quorumVotes = 10000000e9; // 10 000 000 = 0.5% of Hugo
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint public constant proposalMaxOperations = 10; // 10 actions

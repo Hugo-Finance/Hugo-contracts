@@ -1,7 +1,7 @@
 pragma solidity =0.8.3;
 
 
-import './../utils/Ownable.sol';
+import '../utils/Ownable.sol';
 
 
 contract HUGO is Ownable {
