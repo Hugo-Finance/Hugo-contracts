@@ -68,7 +68,7 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
         }
     }
 
-    function vaultDeposit(uint256 amount) external onlyEOA {
+    function vaultDeposit(uint256 amount) external virtual onlyEOA {
         // we calculate delta, because HUGO has on-transfer fee
         uint256 balance_before = IERC20(HUGO).balanceOf(address(this));
         IERC20(HUGO).transferFrom(msg.sender, address(this), amount);
@@ -233,7 +233,7 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
 
     function _maxTraitForNFTPart(uint256 _nft_part) internal view returns (uint256) {
         INFT.Trait[] memory _traits = INFT(NFT).getTraitsOfAttribute(_nft_part);
-        return _traits[_traits.length - 1].traitId;
+        return _traits.length;
     }
 
     function _checkTraitAllowed(uint256[] memory seed, NFTPart part) internal view returns (bool allowed) {
@@ -328,7 +328,7 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
         emit ConsumableUsed(msg.sender, egg_id, consumable_id, _user_data.eggs[egg_id].consumable_lvl);
     }
 
-    function _getIncubatorHatchTime(IncubatorLevel _level) internal pure returns (uint32) {
+    function _getIncubatorHatchTime(IncubatorLevel _level) internal pure virtual returns (uint32) {
         if (_level == IncubatorLevel.LVL_3) {
             return 3 days;
         } else if (_level == IncubatorLevel.LVL_2) {
