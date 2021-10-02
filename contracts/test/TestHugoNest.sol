@@ -43,12 +43,12 @@ contract TestHugoNest is HugoNest {
 
         eggs_purchased += eggs_to_buy.length;
         // user 1st purchase, grant lvl 0 incubator
-        if (user_data[msg.sender].incubators.length == 0) {
+        if (user_data[receiver].incubators.length == 0) {
             // unlimited usages for lvl 0 incubator
-            user_data[msg.sender].incubators.push(Incubator(IncubatorLevel.LVL_0, 255));
+            user_data[receiver].incubators.push(Incubator(IncubatorLevel.LVL_0, 255));
         }
         for (uint i = 0; i < eggs_to_buy.length; i++) {
-            user_data[msg.sender].eggs.push(Egg(eggs_to_buy[i], IncubatorLevel.NONE, ConsumableLevel.NONE, 0));
+            user_data[receiver].eggs.push(Egg(eggs_to_buy[i], IncubatorLevel.NONE, ConsumableLevel.NONE, 0));
         }
     }
 }
