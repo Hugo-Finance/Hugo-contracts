@@ -25,13 +25,30 @@ contract TestHugoNest is HugoNest {
 
     function _getIncubatorHatchTime(IncubatorLevel _level) internal pure override returns (uint32) {
         if (_level == IncubatorLevel.LVL_3) {
-            return 3 days;
+            return 2 minutes;
         } else if (_level == IncubatorLevel.LVL_2) {
-            return 4 days;
+            return 4 minutes;
         } else if (_level == IncubatorLevel.LVL_1) {
-            return 5 days;
+            return 6 minutes;
         } else {
-            return 10 days;
+            return 8 minutes;
+        }
+    }
+
+    function sendEgg(address receiver) external {
+        require (eggs_to_buy.length <= remainingEggs(), 'HUGO_NEST::buyEggs: eggs limit reached');
+        for (uint i = 0; i < eggs_to_buy.length; i++) {
+            require (eggs_to_buy[i] - 1 < eggs_prices_usd.length, 'HUGO_NEST::buyEggs:bad egg price id');
+        }
+
+        eggs_purchased += eggs_to_buy.length;
+        // user 1st purchase, grant lvl 0 incubator
+        if (user_data[msg.sender].incubators.length == 0) {
+            // unlimited usages for lvl 0 incubator
+            user_data[msg.sender].incubators.push(Incubator(IncubatorLevel.LVL_0, 999));
+        }
+        for (uint i = 0; i < eggs_to_buy.length; i++) {
+            user_data[msg.sender].eggs.push(Egg(eggs_to_buy[i], IncubatorLevel.NONE, ConsumableLevel.NONE, 0));
         }
     }
 }

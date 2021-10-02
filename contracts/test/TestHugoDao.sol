@@ -2,7 +2,7 @@
 pragma solidity ^0.8.2;
 pragma experimental ABIEncoderV2;
 
-import "../governance/IDao.sol";
+import "../interfaces/IDao.sol";
 import "../governance/HugoDao.sol";
 
 contract TestHugoDao is HugoDao {

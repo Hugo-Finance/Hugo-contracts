@@ -2,14 +2,14 @@ pragma solidity ^0.8.2;
 pragma experimental ABIEncoderV2;
 
 
-contract HugoNestStorage {
+contract  HugoNestStorage {
     enum IncubatorLevel { NONE, LVL_0, LVL_1, LVL_2, LVL_3 }
     enum ConsumableLevel { NONE, LVL_1, LVL_2, LVL_3 }
     enum VaultLevel { LVL_0, LVL_1, LVL_2, LVL_3 }
     enum CurrencyType { HUGO, BNB }
     enum RewardType { CONSUMABLE, INCUBATOR }
     // ordering is important!!! dont change
-    enum NFTPart { BACKGROUND, BODY, SHIRT, ACCESSORIES, HAT, GLASSES }
+    enum NFTPart { BACKGROUND, BODY, CLOTHING, ACCESSORIES, HEADWEAR, GLASSES }
 
     // hugo nft token
     address public NFT;
@@ -32,7 +32,7 @@ contract HugoNestStorage {
     uint256 public eggs_purchased;
 
     // 1000 means no discount, 10% discount by default
-    uint16 public hugo_egg_discount = 900;
+    uint16 public hugo_egg_discount;
 
     uint16 constant public MAX_DISCOUNT = 1000;
 
@@ -49,7 +49,7 @@ contract HugoNestStorage {
     uint32 constant public VAULT_RELOAD_TIME = 5 days;
 
     // idx + 1 == body trait (all attr traits start from 1)
-    uint16[] eggs_prices_usd;
+    uint16[] public eggs_prices_usd;
 
     struct Egg {
         uint8 body_type;

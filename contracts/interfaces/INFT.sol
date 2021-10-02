@@ -22,5 +22,5 @@ interface INFT {
         string calldata name,
         string calldata description
     )
-    external;
+    external returns (uint256 newTokenId);
 }

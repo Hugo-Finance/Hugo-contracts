@@ -1,7 +1,8 @@
+// SPDX-License-Identifier: <SPDX-License>
 pragma solidity ^0.8.2;
 pragma experimental ABIEncoderV2;
 
-import "../utils/Ownable.sol";
+import "../utils/ProxyOwnable.sol";
 import "../proxy/Initializable.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/INFT.sol";
@@ -9,7 +10,7 @@ import "../interfaces/IPancake.sol";
 import "./HugoNestStorage.sol";
 
 
-contract HugoNest is Ownable, Initializable, HugoNestStorage {
+contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
     event NewBeneficiary(address indexed new_beneficiary);
     event NewPancake(address indexed new_pancake);
     event NewHugoEggDiscount(uint256 indexed new_discount);
@@ -20,7 +21,7 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
     event ConsumableUsed(address indexed user, uint256 indexed egg_id, uint256 indexed consumable_id, ConsumableLevel consumable_level);
     event IncubatorUsed(address indexed user, uint256 indexed egg_id, uint256 indexed incubator_id, IncubatorLevel incubator_level);
     event EggsPurchase(address indexed user, uint8[] eggs_prices_ids, CurrencyType indexed cur_type, uint256 indexed total_price);
-    event EggHatched(address indexed user, uint256[] seed, uint256 indexed egg_id);
+    event EggHatched(address indexed user, uint256[] seed, uint256 indexed egg_id, uint256 indexed nft_id, string name, string description);
 
     function initialize(
         address _nft,
@@ -28,7 +29,8 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
         address _pancake,
         uint16[] memory _eggs_prices_usd,
         address _wbnb,
-        address _busd
+        address _busd,
+        uint16 _hugo_egg_discount
     ) public initializer {
         NFT = _nft;
         beneficiary = _beneficiary;
@@ -36,6 +38,8 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
         eggs_prices_usd = _eggs_prices_usd;
         WBNB = _wbnb;
         BUSD = _busd;
+        hugo_egg_discount = _hugo_egg_discount;
+        _setOwner(msg.sender);
     }
 
     function setBeneficiary(address new_beneficiary) external onlyOwner {
@@ -138,7 +142,7 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
             _user_data.consumables.push(_level);
             emit VaultConsumableReward(msg.sender, _level);
         }
-
+        _user_data.vault_reward_at = uint32(block.timestamp + VAULT_RELOAD_TIME);
     }
 
     function remainingEggs() public view returns (uint256) {
@@ -164,20 +168,20 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
         _path[0] = HUGO;
         _path[1] = WBNB;
         _path[2] = BUSD;
-        uint[] memory prices_arr = IPancake(Pancake).getAmountsIn(usd * 10**18, _path);
+        uint[] memory prices_arr = IPancake(Pancake).getAmountsIn(usd * 10**18, _path); // busd has 18 decimals
         bnb_price = prices_arr[1];
         hugo_price = prices_arr[0];
         // 10% discount by default
         hugo_price = (hugo_price * hugo_egg_discount) / MAX_DISCOUNT;
     }
 
-    // eggs_prices_ids - array of ids of eggs_prices_usd elems
-    function buyEggs(uint8[] calldata eggs_prices_ids, CurrencyType cur_type) external payable onlyEOA {
-        require (eggs_prices_ids.length <= remainingEggs(), 'HUGO_NEST::buyEggs: eggs limit reached');
+    // eggs_to_buy - array of eggs user wants to buy
+    function buyEggs(uint8[] calldata eggs_to_buy, CurrencyType cur_type) external payable onlyEOA {
+        require (eggs_to_buy.length <= remainingEggs(), 'HUGO_NEST::buyEggs: eggs limit reached');
         uint256 total_price;
-        for (uint i = 0; i < eggs_prices_ids.length; i++) {
-            require (eggs_prices_ids[i] < eggs_prices_usd.length, 'HUGO_NEST::buyEggs:bad egg price id');
-            total_price += eggs_prices_usd[eggs_prices_ids[i]];
+        for (uint i = 0; i < eggs_to_buy.length; i++) {
+            require (eggs_to_buy[i] - 1 < eggs_prices_usd.length, 'HUGO_NEST::buyEggs:bad egg price id');
+            total_price += eggs_prices_usd[eggs_to_buy[i] - 1];
         }
 
         (uint256 bnb_price, uint256 hugo_price) = calcPriceInCurrencies(total_price);
@@ -189,20 +193,20 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
                 // send back extra value
                 payable(msg.sender).transfer(msg.value - bnb_price);
             }
-            emit EggsPurchase(msg.sender, eggs_prices_ids, cur_type, bnb_price);
+            emit EggsPurchase(msg.sender, eggs_to_buy, cur_type, bnb_price);
         } else {
             IERC20(HUGO).transferFrom(msg.sender, beneficiary, hugo_price);
-            emit EggsPurchase(msg.sender, eggs_prices_ids, cur_type, hugo_price);
+            emit EggsPurchase(msg.sender, eggs_to_buy, cur_type, hugo_price);
         }
 
-        eggs_purchased += eggs_prices_ids.length;
+        eggs_purchased += eggs_to_buy.length;
         // user 1st purchase, grant lvl 0 incubator
         if (user_data[msg.sender].incubators.length == 0) {
             // unlimited usages for lvl 0 incubator
-            user_data[msg.sender].incubators.push(Incubator(IncubatorLevel.LVL_0, 0));
+            user_data[msg.sender].incubators.push(Incubator(IncubatorLevel.LVL_0, 999));
         }
-        for (uint i = 0; i < eggs_prices_ids.length; i++) {
-            user_data[msg.sender].eggs.push(Egg(eggs_prices_ids[i] + 1, IncubatorLevel.NONE, ConsumableLevel.NONE, 0));
+        for (uint i = 0; i < eggs_to_buy.length; i++) {
+            user_data[msg.sender].eggs.push(Egg(eggs_to_buy[i], IncubatorLevel.NONE, ConsumableLevel.NONE, 0));
         }
     }
 
@@ -262,8 +266,8 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
         } else if (_egg.consumable_lvl == ConsumableLevel.LVL_1) {
             // some parts should be chosen
             require (_checkTraitAllowed(seed, NFTPart.BACKGROUND), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.SHIRT), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.HAT), "HUGO_NEST::hatchEgg:bad attribute value");
+            require (_checkTraitAllowed(seed, NFTPart.CLOTHING), "HUGO_NEST::hatchEgg:bad attribute value");
+            require (_checkTraitAllowed(seed, NFTPart.HEADWEAR), "HUGO_NEST::hatchEgg:bad attribute value");
 
             // some are not
             require(seed[uint256(NFTPart.ACCESSORIES)] == 0, "HUGO_NEST::hatchEgg:attribute not allowed");
@@ -271,8 +275,8 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
         } else if (_egg.consumable_lvl == ConsumableLevel.LVL_2) {
             // some parts should be chosen
             require (_checkTraitAllowed(seed, NFTPart.BACKGROUND), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.SHIRT), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.HAT), "HUGO_NEST::hatchEgg:bad attribute value");
+            require (_checkTraitAllowed(seed, NFTPart.CLOTHING), "HUGO_NEST::hatchEgg:bad attribute value");
+            require (_checkTraitAllowed(seed, NFTPart.HEADWEAR), "HUGO_NEST::hatchEgg:bad attribute value");
             require (_checkTraitAllowed(seed, NFTPart.GLASSES), "HUGO_NEST::hatchEgg:bad attribute value");
 
             require (seed[uint256(NFTPart.ACCESSORIES)] == 0, "HUGO_NEST::hatchEgg:attribute not allowed");
@@ -305,9 +309,9 @@ contract HugoNest is Ownable, Initializable, HugoNestStorage {
 
         require (checkNFTAvailable(new_seed), "HUGO_NEST::hatchEgg:hatchEgg:cant hatch egg with provided seed");
 
-        INFT(NFT).mint(msg.sender, seed, name, description);
+        uint256 minted_nft_id = INFT(NFT).mint(msg.sender, seed, name, description);
 
-        emit EggHatched(msg.sender, seed, egg_id);
+        emit EggHatched(msg.sender, seed, egg_id, minted_nft_id, name, description);
     }
 
     function useConsumable(uint256 egg_id, uint256 consumable_id) external onlyEOA {
