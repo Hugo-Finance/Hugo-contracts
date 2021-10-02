@@ -9,6 +9,7 @@ const BENEFICIARY = '0x197216E3421D13A72Fdd79A44d8d89f121dcab6C';
 const prices = [150, 35, 35, 120, 200, 70, 200, 150, 35, 35, 35, 120, 200, 35, 120];
 const WBNB = '0x197216E3421D13A72Fdd79A44d8d89f121dcab6C'; // doesnt matter for test
 const BUSD = '0x197216E3421D13A72Fdd79A44d8d89f121dcab6C'; // doesnt matter for test
+const owner = '0x93E05804b0A58668531F65A93AbfA1aD8F7F5B2b';
 const hugo_egg_discount = 900;
 
 async function main() {
@@ -17,7 +18,7 @@ async function main() {
 
     const HugoNest = await ethers.getContractFactory('TestHugoNest'); // REPLACE WITH REAL FOR PROD
     const hugo_nest = await upgrades.deployProxy(HugoNest, [
-        NFT, BENEFICIARY, PANCAKE, prices, WBNB, BUSD, hugo_egg_discount
+        owner, NFT, BENEFICIARY, PANCAKE, prices, WBNB, BUSD, hugo_egg_discount
     ]);
 
     await hugo_nest.deployed();

@@ -24,6 +24,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
     event EggHatched(address indexed user, uint256[] seed, uint256 indexed egg_id, uint256 indexed nft_id, string name, string description);
 
     function initialize(
+        address _owner,
         address _nft,
         address _beneficiary,
         address _pancake,
@@ -39,7 +40,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         WBNB = _wbnb;
         BUSD = _busd;
         hugo_egg_discount = _hugo_egg_discount;
-        _setOwner(msg.sender);
+        _setOwner(_owner);
     }
 
     function getUserData(address user) external view returns (UserData memory) {
