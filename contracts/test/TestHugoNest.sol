@@ -35,7 +35,7 @@ contract TestHugoNest is HugoNest {
         }
     }
 
-    function sendEgg(address receiver) external {
+    function sendEgg(uint8[] calldata eggs_to_buy, address receiver) external {
         require (eggs_to_buy.length <= remainingEggs(), 'HUGO_NEST::buyEggs: eggs limit reached');
         for (uint i = 0; i < eggs_to_buy.length; i++) {
             require (eggs_to_buy[i] - 1 < eggs_prices_usd.length, 'HUGO_NEST::buyEggs:bad egg price id');
@@ -45,7 +45,7 @@ contract TestHugoNest is HugoNest {
         // user 1st purchase, grant lvl 0 incubator
         if (user_data[msg.sender].incubators.length == 0) {
             // unlimited usages for lvl 0 incubator
-            user_data[msg.sender].incubators.push(Incubator(IncubatorLevel.LVL_0, 999));
+            user_data[msg.sender].incubators.push(Incubator(IncubatorLevel.LVL_0, 255));
         }
         for (uint i = 0; i < eggs_to_buy.length; i++) {
             user_data[msg.sender].eggs.push(Egg(eggs_to_buy[i], IncubatorLevel.NONE, ConsumableLevel.NONE, 0));
