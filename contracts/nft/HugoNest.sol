@@ -42,6 +42,10 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         _setOwner(msg.sender);
     }
 
+    function getUserData(address user) external view returns (UserData memory) {
+        return user_data[user];
+    }
+
     function setBeneficiary(address new_beneficiary) external onlyOwner {
         beneficiary = new_beneficiary;
         emit NewBeneficiary(new_beneficiary);

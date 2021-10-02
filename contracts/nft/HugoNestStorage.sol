@@ -79,5 +79,5 @@ contract  HugoNestStorage {
         Incubator[] incubators;
     }
 
-    mapping(address => UserData) public user_data;
+    mapping(address => UserData) user_data;
 }
