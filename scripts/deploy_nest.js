@@ -18,7 +18,7 @@ async function main() {
 
     const HugoNest = await ethers.getContractFactory('TestHugoNest'); // REPLACE WITH REAL FOR PROD
     const hugo_nest = await upgrades.deployProxy(HugoNest, [
-        owner, NFT, BENEFICIARY, PANCAKE, prices, WBNB, BUSD, hugo_egg_discount
+        owner, HUGO_ADDR, NFT, BENEFICIARY, PANCAKE, prices, WBNB, BUSD, hugo_egg_discount
     ]);
 
     await hugo_nest.deployed();

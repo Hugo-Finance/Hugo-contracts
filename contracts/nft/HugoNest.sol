@@ -14,6 +14,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
     event NewBeneficiary(address indexed new_beneficiary);
     event NewPancake(address indexed new_pancake);
     event NewHugoEggDiscount(uint256 indexed new_discount);
+    event NewPrices(uint16[] eggs_prices);
     event VaultDeposit(address indexed user, uint256 indexed amount, VaultLevel indexed new_vault_level);
     event VaultWithdraw(address indexed user, uint256 indexed amount, VaultLevel indexed new_vault_level);
     event VaultIncubatorReward(address indexed user, IncubatorLevel indexed incubator_level);
@@ -25,6 +26,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
 
     function initialize(
         address _owner,
+        address _hugo,
         address _nft,
         address _beneficiary,
         address _pancake,
@@ -33,6 +35,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         address _busd,
         uint16 _hugo_egg_discount
     ) public initializer {
+        HUGO = _hugo;
         NFT = _nft;
         beneficiary = _beneficiary;
         Pancake = _pancake;
@@ -56,6 +59,12 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         Pancake = new_pancake;
         emit NewPancake(new_pancake);
     }
+
+    function setEggsPrices(uint16[] memory _eggs_prices_usd) external onlyOwner {
+        eggs_prices_usd = _eggs_prices_usd;
+        emit NewPrices(_eggs_prices_usd);
+    }
+
 
     function setHugoEggDiscount(uint16 new_discount) external onlyOwner {
         require (new_discount <= MAX_DISCOUNT, "HUGO_NEST::setHugoEggDiscount:bad discount");
@@ -166,14 +175,19 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         (seed, seed_available) = _fillSeedWithRandom(seed);
     }
 
-    function calcPriceInCurrencies(uint256 usd) public view returns (uint256 bnb_price, uint256 hugo_price) {
-        // usd is num without decimals, e.g 35$ = 35 here
+    function calcPriceInCurrencies(uint8[] calldata eggs_to_buy) public view returns (uint256 bnb_price, uint256 hugo_price) {
+        uint256 total_price;
+        for (uint i = 0; i < eggs_to_buy.length; i++) {
+            require (eggs_to_buy[i] - 1 < eggs_prices_usd.length, 'HUGO_NEST::calcPriceInCurrencies:bad egg price id');
+            total_price += eggs_prices_usd[eggs_to_buy[i] - 1];
+        }
+        // total_price is num without decimals, e.g 35$ = 35 here
         // we use busd for calculating usd prices
         address[] memory _path = new address[](3);
         _path[0] = HUGO;
         _path[1] = WBNB;
         _path[2] = BUSD;
-        uint[] memory prices_arr = IPancake(Pancake).getAmountsIn(usd * 10**18, _path); // busd has 18 decimals
+        uint[] memory prices_arr = IPancake(Pancake).getAmountsIn(total_price * 10**18, _path); // busd has 18 decimals
         bnb_price = prices_arr[1];
         hugo_price = prices_arr[0];
         // 10% discount by default
@@ -183,13 +197,8 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
     // eggs_to_buy - array of eggs user wants to buy
     function buyEggs(uint8[] calldata eggs_to_buy, CurrencyType cur_type) external payable onlyEOA {
         require (eggs_to_buy.length <= remainingEggs(), 'HUGO_NEST::buyEggs: eggs limit reached');
-        uint256 total_price;
-        for (uint i = 0; i < eggs_to_buy.length; i++) {
-            require (eggs_to_buy[i] - 1 < eggs_prices_usd.length, 'HUGO_NEST::buyEggs:bad egg price id');
-            total_price += eggs_prices_usd[eggs_to_buy[i] - 1];
-        }
 
-        (uint256 bnb_price, uint256 hugo_price) = calcPriceInCurrencies(total_price);
+        (uint256 bnb_price, uint256 hugo_price) = calcPriceInCurrencies(eggs_to_buy);
         if (cur_type == CurrencyType.BNB) {
             require (msg.value >= bnb_price, 'HUGO_NEST::buyEggs:low BNB sent');
 
