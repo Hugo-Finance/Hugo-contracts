@@ -206,8 +206,13 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
 
         eggs_purchased += eggs_to_buy.length;
         // user 1st purchase, grant lvl 0 incubator
-        if (user_data[msg.sender].incubators.length == 0) {
-            // unlimited usages for lvl 0 incubator
+        bool has_lvl0_incubator;
+        for (uint i = 0; i < user_data[msg.sender].incubators.length; i++) {
+            if (user_data[msg.sender].incubators[i].lvl == IncubatorLevel.LVL_0) {
+                has_lvl0_incubator = true;
+            }
+        }
+        if (!has_lvl0_incubator) {
             user_data[msg.sender].incubators.push(Incubator(IncubatorLevel.LVL_0, 255));
         }
         for (uint i = 0; i < eggs_to_buy.length; i++) {
