@@ -116,7 +116,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         emit VaultWithdraw(msg.sender, amount, _user_data.vault_level);
     }
 
-    function getVaultReward(RewardType _type) external {
+    function getVaultReward(RewardType _type) external virtual onlyEOA {
         UserData storage _user_data = user_data[msg.sender];
 
         require (!(_user_data.vault_level == VaultLevel.LVL_0), 'HUGO_NEST::getVaultReward: vault is level 0');
@@ -166,7 +166,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
     // check if provided seed is not minted yet
     // works for full and correct seeds
     function checkNFTAvailable(uint256[] memory seed) public view returns (bool) {
-        return INFT(NFT).isUsedSeed(seed);
+        return !INFT(NFT).isUsedSeed(seed);
     }
 
     // accepts partly empty seed
@@ -233,10 +233,10 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         // copy seed to avoid modifying given one
         uint256[] memory new_seed = seed;
 
-        for (uint rand_seed = 0; rand_seed < 1000; rand_seed++) {
+        for (uint rand_seed = 0; rand_seed < 100; rand_seed++) {
             for (uint j = 0; j < new_seed.length; j++) {
                 // skip chosen attrs
-                if (new_seed[j] > 0) {
+                if (seed[j] > 0) {
                     continue;
                 }
                 uint256 max_trait = _maxTraitForNFTPart(j);
@@ -310,6 +310,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
             }
         }
 
+        require (_egg.incubator_lvl != IncubatorLevel.NONE, "HUGO_NEST::hatchEgg:egg is not in incubator");
         require (_egg.ready_at <= block.timestamp, "HUGO_NEST::hatchEgg:egg is not ready for hatching");
 
         // add body type
@@ -318,7 +319,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
 
         if (_egg.consumable_lvl != ConsumableLevel.LVL_3) {
             // now we know that only allowed parts of seed are set, add other
-            // try to create random nft 1000 times, fail otherwise
+            // try to create random nft 100 times, fail otherwise
             bool seed_found;
             (new_seed, seed_found) = _fillSeedWithRandom(new_seed);
             if (!seed_found) {
@@ -326,11 +327,11 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
             }
         }
 
-        require (checkNFTAvailable(new_seed), "HUGO_NEST::hatchEgg:hatchEgg:cant hatch egg with provided seed");
+        require (checkNFTAvailable(new_seed), "HUGO_NEST::hatchEgg:cant hatch egg with provided seed");
 
-        uint256 minted_nft_id = INFT(NFT).mint(msg.sender, seed, name, description);
+        uint256 minted_nft_id = INFT(NFT).mint(msg.sender, new_seed, name, description);
 
-        emit EggHatched(msg.sender, seed, egg_id, minted_nft_id, name, description);
+        emit EggHatched(msg.sender, new_seed, egg_id, minted_nft_id, name, description);
     }
 
     function useConsumable(uint256 egg_id, uint256 consumable_id) external onlyEOA {

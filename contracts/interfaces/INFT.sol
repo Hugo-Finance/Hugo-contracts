@@ -12,10 +12,7 @@ interface INFT {
     function minAttributesAmount() external view returns (uint256);
     function generatedNFTsAmount() external view returns (uint256);
     function isUsedSeed(uint256[] calldata seed) external view returns (bool);
-    function getTraitsOfAttribute(uint256 attributeId)
-    external
-    view
-    returns (Trait[] memory);
+    function getTraitsOfAttribute(uint256 attributeId) external view returns (Trait[] memory);
     function mint(
         address to,
         uint256[] calldata seed,
