@@ -13,7 +13,7 @@ const {
     increaseTime,
     encodeParameters,
     mineBlock,
-} = require('../Utils/Ethereum');
+} = require('../utils/Ethereum');
 
 const HugoNest = artifacts.require('HugoNest');
 const HugoNFT = artifacts.require('HugoNFT');

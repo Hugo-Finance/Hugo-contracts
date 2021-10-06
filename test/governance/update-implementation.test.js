@@ -5,7 +5,7 @@ const {
   increaseTime,
   encodeParameters,
   mineBlock,
-} = require('../Utils/Ethereum');
+} = require('../utils/Ethereum');
 
 let accounts;
 

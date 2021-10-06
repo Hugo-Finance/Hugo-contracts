@@ -29,7 +29,7 @@ module.exports = async ({
         gasLimit: 20000000,
         proxy: {
             proxyContract: 'OpenZeppelinTransparentProxy',
-            execute: {
+            init: {
                 methodName: 'initialize',
                 args: [owner, HUGO_ADDR, nft.address, BENEFICIARY, PANCAKE, prices, WBNB, BUSD, hugo_egg_discount],
             }
