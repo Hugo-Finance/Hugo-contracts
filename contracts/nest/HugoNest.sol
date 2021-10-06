@@ -240,8 +240,8 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
                     continue;
                 }
                 uint256 max_trait = _maxTraitForNFTPart(j);
-                // get random uint for every part of nft based on block and rand seed
-                uint256 random = uint256(keccak256(abi.encode(j, rand_seed, blockhash(block.number)))) % max_trait + 1;
+                // get random uint for every part of nft based on block and rand seed and msg.sender
+                uint256 random = (uint256(keccak256(abi.encode(msg.sender, j, rand_seed, blockhash(block.number)))) % max_trait) + 1;
                 new_seed[j] = random;
             }
 
