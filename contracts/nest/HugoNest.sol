@@ -272,6 +272,9 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
 
         Egg memory _egg = _user_data.eggs[egg_id];
 
+        // remove egg
+        _user_data.eggs[egg_id] = _user_data.eggs[_user_data.eggs.length - 1];
+        _user_data.eggs.pop();
         // body is set when egg is purchased
         require (seed[uint256(NFTPart.BODY)] == 0, "HUGO_NEST::hatchEgg:body attribute cant be chosen");
 
