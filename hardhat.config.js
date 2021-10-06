@@ -1,7 +1,9 @@
 require("@nomiclabs/hardhat-waffle");
 require('@nomiclabs/hardhat-ethers');
 require("@nomiclabs/hardhat-truffle5");
+require('hardhat-deploy');
 require('@openzeppelin/hardhat-upgrades');
+require("@nomiclabs/hardhat-etherscan");
 
 const { mnemonic } = require('./secrets.json');
 
@@ -22,6 +24,11 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  namedAccounts: {
+    deployer: {
+      default: 0
+    }
+  },
   defaultNetwork: "localhost",
   networks: {
     localhost: {
@@ -43,11 +50,11 @@ module.exports = {
     }
   },
   solidity: {
-    version: "0.8.3",
+    version: "0.8.7",
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 10000
       }
     }
   },
