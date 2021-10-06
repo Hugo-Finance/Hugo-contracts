@@ -4,7 +4,7 @@ import "../nest/HugoNest.sol";
 
 
 contract TestHugoNest is HugoNest {
-    uint32 constant public VAULT_RELOAD_TIME_test = 5 minutes;
+    uint32 constant public VAULT_RELOAD_TIME_test = 3 minutes;
 
     function vaultDeposit(uint256 amount) external override onlyEOA {
         // we calculate delta, because HUGO has on-transfer fee

@@ -230,13 +230,13 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
     }
 
     function _fillSeedWithRandom(uint256[] memory seed) internal view returns (uint256[] memory, bool seed_found) {
-        // copy seed to avoid modifying given one
-        uint256[] memory new_seed = seed;
+        uint256[] memory new_seed = new uint256[](seed.length);
 
         for (uint rand_seed = 0; rand_seed < 100; rand_seed++) {
             for (uint j = 0; j < new_seed.length; j++) {
                 // skip chosen attrs
                 if (seed[j] > 0) {
+                    new_seed[j] = seed[j];
                     continue;
                 }
                 uint256 max_trait = _maxTraitForNFTPart(j);

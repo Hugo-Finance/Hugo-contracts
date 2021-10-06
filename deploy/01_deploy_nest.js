@@ -10,14 +10,23 @@ const hugo_egg_discount = 900;
 
 module.exports = async ({
     getNamedAccounts,
-    deployments
+    deployments,
+    getChainId
 }) => {
     const {deployer} = await getNamedAccounts();
     const nft = await deployments.get('HugoNFT');
+    const chain_id = await getChainId();
+    let contract = 'HugoNest';
+    if (chain_id.toString() === '97') {
+        contract = 'TestHugoNest';
+    }
 
-    const nest = await deployments.deploy('HugoNest', {
+    console.log('Using contract -', contract);
+
+    const nest = await deployments.deploy(contract, {
         from: deployer,
         log: true,
+        gasLimit: 20000000,
         proxy: {
             proxyContract: 'OpenZeppelinTransparentProxy',
             execute: {

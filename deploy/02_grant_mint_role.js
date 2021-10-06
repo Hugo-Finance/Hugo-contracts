@@ -6,7 +6,13 @@ module.exports = async ({
     deployments
 }) => {
     const {deployer} = await getNamedAccounts();
-    const nest = await deployments.get('HugoNest');
+    const chain_id = await getChainId();
+    let contract = 'HugoNest';
+    if (chain_id.toString() === '97') {
+        contract = 'TestHugoNest';
+    }
+    console.log('Using contract -', contract);
+    const nest = await deployments.get(contract);
     await deployments.execute(
         'HugoNFT',
         {
