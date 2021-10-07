@@ -1,24 +1,30 @@
+const names = require('./names.json');
+
 // testnet
-const ATTRIBUTE_NAMES = ["background", "body", "clothing", "accessories", "headwear", "glasses"];
+const ATTRIBUTE_NAMES = ["Background", "Body", "Clothing", "Accessories", "Headwear", "Glasses"];
 const CIDs = [
-    "QmZdAJvK1onmhNkiPRbouLcFSCXqMUXeakkNeuqThCxbrd",
-    "QmWqSckcJzbTsMziCGkKt8xNftKEb2hrMsDWS6hwH3F5Z5",
-    "QmVnQ5yqj2WuR7u61k41SLCCQurBp3UxW6Sgm3MxAsKgup",
-    "QmcCm8kcaZVBCMC2rWoqaymCR6iKHKbhyL88qLzQcdGfpt",
-    "QmYyzY4FNCTE4hsPcP7LsLutD3Rw2jgJR9DpwbiJL1Jvgk",
-    "QmSBGG6LaW4SCiiaRq9k1QdQJ9H5eDwZUHxEe1LFM5LrB9"
+    'QmUhYDDxAJ23GYPimNoqR487tSLYG5C2Bn3B9XiPq3jP3o',
+    'QmWqSckcJzbTsMziCGkKt8xNftKEb2hrMsDWS6hwH3F5Z5',
+    'QmVjoqYb8hfqvHeNVms34CGZZ17k8apU245xmdAD2HEWY8',
+    'QmbSoUARHT4gNzcj2c4hm3CuaNTQvZNYGfoLJzgagnRDaE',
+    'QmVF3gWPk1Lf7T2c5ndrvWsbBDn7fCDNU9r6B8d8Xp1SiM',
+    'QmTGQRfhV1uvC65Dphw2MJ9sQ4uxraXXescnnxgq6j1JEr'
 ]
-const TRAIT_NUMS = [12, 15, 29, 9, 27, 9];
+const TRAITS_NAMES = ATTRIBUTE_NAMES.map((attr_name) => {
+    const sorted_keys = Object.keys(names[attr_name]).sort((a, b) => Number(a) < Number(b));
+    return sorted_keys.map((key) => names[attr_name][key])
+})
+
+const TRAIT_NUMS = [12, 15, 29, 26, 27, 15];
 const constructorParams = {
-    baseURI: "your base uri",
+    baseURI: "https://app.hugo.finance/api/nft/",
     initialAmountOfAttributes: ATTRIBUTE_NAMES.length,
     generationScript: "some py script",
     traitAmountForEachAttribute: TRAIT_NUMS,
-    traitNamesForEachAttribute: TRAIT_NUMS.map((e, i) => Array(e).fill(i.toString())),
+    traitNamesForEachAttribute: TRAITS_NAMES,
     CIDsForEachAttribute: CIDs,
     attributesNames: ATTRIBUTE_NAMES,
 };
-
 
 module.exports = async ({
     getNamedAccounts,
