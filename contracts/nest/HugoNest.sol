@@ -232,13 +232,12 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
 
     function _fillSeedWithRandom(uint256[] memory seed) internal view returns (uint256[] memory, bool seed_found) {
         require (seed[uint256(NFTPart.BODY)] > 0, 'HUGO_NEST::hatchEgg:body should be chosen');
+
         uint256 glasses = seed[uint256(NFTPart.GLASSES)];
-        // if user have chosen frog, he cant use glasses
-        if (seed[uint256(NFTPart.BODY)] == FROG_BODY_SEED && glasses > 0 && glasses != NO_GLASSES_SEED) {
-            revert ('HUGO_NEST::hatchEgg:frog cant wear glasses');
-        }
-        // if user have chosen frog, but did not chosen glasses, set to empty
-        if (seed[uint256(NFTPart.BODY)] == FROG_BODY_SEED && glasses == 0) {
+        if (seed[uint256(NFTPart.BODY)] == FROG_BODY_SEED) {
+            if (glasses != 0 && glasses != NO_GLASSES_SEED) {
+                revert ('HUGO_NEST::hatchEgg:frog cant wear glasses');
+            }
             seed[uint256(NFTPart.GLASSES)] = NO_GLASSES_SEED;
         }
 
@@ -299,36 +298,31 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
             }
         } else if (_egg.consumable_lvl == ConsumableLevel.LVL_1) {
             // some parts should be chosen
-            require (_checkTraitAllowed(seed, NFTPart.BACKGROUND), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.CLOTHING), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.HEADWEAR), "HUGO_NEST::hatchEgg:bad attribute value");
+            require (_checkTraitAllowed(seed, NFTPart.BACKGROUND), "HUGO_NEST::hatchEgg:bad background value");
+            require (_checkTraitAllowed(seed, NFTPart.CLOTHING), "HUGO_NEST::hatchEgg:bad clothing value");
+            require (_checkTraitAllowed(seed, NFTPart.HEADWEAR), "HUGO_NEST::hatchEgg:bad headwear value");
 
             // some are not
-            require(seed[uint256(NFTPart.ACCESSORIES)] == 0, "HUGO_NEST::hatchEgg:attribute not allowed");
-            require(seed[uint256(NFTPart.GLASSES)] == 0, "HUGO_NEST::hatchEgg:attribute not allowed");
+            require(seed[uint256(NFTPart.ACCESSORIES)] == 0, "HUGO_NEST::hatchEgg:accessories not allowed");
+            require(seed[uint256(NFTPart.GLASSES)] == 0, "HUGO_NEST::hatchEgg:glasses not allowed");
         } else if (_egg.consumable_lvl == ConsumableLevel.LVL_2) {
             // some parts should be chosen
-            require (_checkTraitAllowed(seed, NFTPart.BACKGROUND), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.CLOTHING), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.HEADWEAR), "HUGO_NEST::hatchEgg:bad attribute value");
-            require (_checkTraitAllowed(seed, NFTPart.GLASSES), "HUGO_NEST::hatchEgg:bad attribute value");
+            require (_checkTraitAllowed(seed, NFTPart.BACKGROUND), "HUGO_NEST::hatchEgg:bad background value");
+            require (_checkTraitAllowed(seed, NFTPart.CLOTHING), "HUGO_NEST::hatchEgg:bad clothing value");
+            require (_checkTraitAllowed(seed, NFTPart.HEADWEAR), "HUGO_NEST::hatchEgg:bad headwear value");
+            // glasses will be checked later
 
-            require (seed[uint256(NFTPart.ACCESSORIES)] == 0, "HUGO_NEST::hatchEgg:attribute not allowed");
+            require (seed[uint256(NFTPart.ACCESSORIES)] == 0, "HUGO_NEST::hatchEgg:accessories not allowed");
         } else if (_egg.consumable_lvl == ConsumableLevel.LVL_3) {
             // glasses is last part
             for (uint i = 0; i < seed.length; i++) {
-                if (i == uint256(NFTPart.BODY)) {
+                if (i == uint256(NFTPart.BODY) || i == uint256(NFTPart.GLASSES)) {
                     // body == 0
+                    // glasses will be checked later
                     continue;
                 }
                 require (seed[i] > 0 && seed[i] <= _maxTraitForNFTPart(i), "HUGO_NEST::hatchEgg:bad attribute value");
             }
-        }
-
-        uint256 glasses = seed[uint256(NFTPart.GLASSES)];
-        // if user have chosen frog, he cant use glasses
-        if (_egg.body_type == FROG_BODY_SEED && glasses > 0 && glasses != NO_GLASSES_SEED) {
-            revert ('HUGO_NEST::hatchEgg:frog cant wear glasses');
         }
 
         require (_egg.incubator_lvl != IncubatorLevel.NONE, "HUGO_NEST::hatchEgg:egg is not in incubator");
@@ -337,6 +331,18 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
         // add body type
         uint256[] memory new_seed = seed;
         new_seed[uint256(NFTPart.BODY)] = _egg.body_type;
+
+        if (_egg.consumable_lvl == ConsumableLevel.LVL_3 || _egg.consumable_lvl == ConsumableLevel.LVL_2) {
+            uint256 glasses = seed[uint256(NFTPart.GLASSES)];
+            if (_egg.body_type == FROG_BODY_SEED) {
+                if (glasses != 0 && glasses != NO_GLASSES_SEED) {
+                    revert ('HUGO_NEST::hatchEgg:frog cant wear glasses');
+                }
+                new_seed[uint256(NFTPart.GLASSES)] = NO_GLASSES_SEED;
+            } else {
+                require (_checkTraitAllowed(seed, NFTPart.GLASSES), "HUGO_NEST::hatchEgg:bad glasses value");
+            }
+        }
 
         if (_egg.consumable_lvl != ConsumableLevel.LVL_3) {
             // now we know that only allowed parts of seed are set, add other
