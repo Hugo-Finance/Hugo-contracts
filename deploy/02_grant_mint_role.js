@@ -23,6 +23,16 @@ module.exports = async ({
         MINTER_ROLE,
         nest.address
     );
+    await deployments.execute(
+        'HugoNFT',
+        {
+            from: deployer,
+            log: true
+        },
+        'grantRole',
+        MINTER_ROLE,
+        deployer
+    );
     console.log('Grant mint role to', nest.address);
 };
 module.exports.tags = ['GrantRole'];

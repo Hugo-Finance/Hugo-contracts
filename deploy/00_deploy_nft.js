@@ -1,4 +1,4 @@
-const names = require('./names.json');
+const names = require('./../consts/names.json');
 
 // testnet
 const ATTRIBUTE_NAMES = ["Background", "Body", "Clothing", "Accessories", "Headwear", "Glasses"];
