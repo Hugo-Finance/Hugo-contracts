@@ -48,6 +48,9 @@ contract  HugoNestStorage {
 
     uint32 constant public VAULT_RELOAD_TIME = 5 days;
 
+    uint8 constant public FROG_BODY_SEED = 5;
+    uint8 constant public NO_GLASSES_SEED = 11;
+
     // idx + 1 == body trait (all attr traits start from 1)
     uint16[] public eggs_prices_usd;
 

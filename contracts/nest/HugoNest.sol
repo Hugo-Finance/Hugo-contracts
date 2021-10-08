@@ -171,6 +171,7 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
 
     // accepts partly empty seed
     // try fill missing parts and check if it could be used
+    // body should be chosen
     function checkSeedAvailable(uint256[] memory seed) public view returns (bool seed_available) {
         (seed, seed_available) = _fillSeedWithRandom(seed);
     }
@@ -230,6 +231,17 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
     }
 
     function _fillSeedWithRandom(uint256[] memory seed) internal view returns (uint256[] memory, bool seed_found) {
+        require (seed[uint256(NFTPart.BODY)] > 0, 'HUGO_NEST::hatchEgg:body should be chosen');
+        uint256 glasses = seed[uint256(NFTPart.GLASSES)];
+        // if user have chosen frog, he cant use glasses
+        if (seed[uint256(NFTPart.BODY)] == FROG_BODY_SEED && glasses > 0 && glasses != NO_GLASSES_SEED) {
+            revert ('HUGO_NEST::hatchEgg:frog cant wear glasses');
+        }
+        // if user have chosen frog, but did not chosen glasses, set to empty
+        if (seed[uint256(NFTPart.BODY)] == FROG_BODY_SEED && glasses == 0) {
+            seed[uint256(NFTPart.GLASSES)] = NO_GLASSES_SEED;
+        }
+
         uint256[] memory new_seed = new uint256[](seed.length);
 
         for (uint rand_seed = 0; rand_seed < 100; rand_seed++) {
@@ -311,6 +323,12 @@ contract HugoNest is ProxyOwnable, Initializable, HugoNestStorage {
                 }
                 require (seed[i] > 0 && seed[i] <= _maxTraitForNFTPart(i), "HUGO_NEST::hatchEgg:bad attribute value");
             }
+        }
+
+        uint256 glasses = seed[uint256(NFTPart.GLASSES)];
+        // if user have chosen frog, he cant use glasses
+        if (_egg.body_type == FROG_BODY_SEED && glasses > 0 && glasses != NO_GLASSES_SEED) {
+            revert ('HUGO_NEST::hatchEgg:frog cant wear glasses');
         }
 
         require (_egg.incubator_lvl != IncubatorLevel.NONE, "HUGO_NEST::hatchEgg:egg is not in incubator");
