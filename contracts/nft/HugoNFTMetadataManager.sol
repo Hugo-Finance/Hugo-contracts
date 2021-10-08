@@ -12,6 +12,34 @@ abstract contract HugoNFTMetadataManager is HugoNFTAbstractImpl {
     event AddNewAttribute(uint256 indexed newAttributeId, string attributeName, string newScript);
     event AddNewTrait(uint256 indexed attributeId, uint256 indexed traitId, string name);
     event UpdateAttributeCID(uint256 indexed attributeId, string ipfsCID);
+    event TraitNameChanged(uint256 indexed attributeId, uint256 indexed traitId, string newName);
+
+    /**
+     * @dev Changes name of the trait in the particular attribute
+     *
+     * Emits {HugoNFTMetadataManager-TraitNameChanged} event
+     *
+     * Requirements:
+     * - `attributeId` should have an id of existent attribute
+     * - `traitId` should be > 0 and of valid range of ids of `attributeId`'s traits
+     * - `newName` shouldn't be empty
+     */
+    function changeTraitName(uint256 attributeId, uint256 traitId, string calldata newName)
+    external
+    override(AbstractHugoNFT)
+    onlyRole(NFT_ADMIN_ROLE)
+    {
+        require(attributeId < currentAttributesAmount, "HugoNFT::invalid attribute id");
+        require(traitId != 0, "HugoNFT::invalid zero trait id");
+        require(bytes(newName).length > 0, "HugoNFT::new name shouldn't be an empty string");
+        Trait[] storage traitsOfAttr = _traitsOfAttribute[attributeId];
+        require(traitsOfAttr.length >= traitId, "HugoNFT::such trait does not exist");
+
+        Trait storage trait = traitsOfAttr[traitId - 1];
+        trait.name = newName;
+
+        emit TraitNameChanged(attributeId, traitId, newName);
+    }
 
     /**
      * @dev Adds a new attribute to NFT.
@@ -38,9 +66,9 @@ abstract contract HugoNFTMetadataManager is HugoNFTAbstractImpl {
         string calldata cid,
         string calldata newGenerationScript
     )
-        external
-        override(AbstractHugoNFT)
-        onlyRole(NFT_ADMIN_ROLE)
+    external
+    override(AbstractHugoNFT)
+    onlyRole(NFT_ADMIN_ROLE)
     {
         require(bytes(attributeName).length > 0, "HugoNFT::attribute name is empty");
         require(
@@ -73,9 +101,9 @@ abstract contract HugoNFTMetadataManager is HugoNFTAbstractImpl {
      * All the other requirements are defined in functions called inside the current one.
      */
     function updateMultipleAttributesCIDs(string[] calldata CIDs)
-        external
-        override(AbstractHugoNFT)
-        onlyRole(NFT_ADMIN_ROLE)
+    external
+    override(AbstractHugoNFT)
+    onlyRole(NFT_ADMIN_ROLE)
     {
         require(
             CIDs.length == currentAttributesAmount,
@@ -108,9 +136,9 @@ abstract contract HugoNFTMetadataManager is HugoNFTAbstractImpl {
         string calldata name,
         string calldata cid
     )
-        external
-        override(AbstractHugoNFT)
-        onlyRole(NFT_ADMIN_ROLE)
+    external
+    override(AbstractHugoNFT)
+    onlyRole(NFT_ADMIN_ROLE)
     {
         addTraitWithoutCID(attributeId, traitId, name);
         updateAttributeCID(attributeId, cid);
@@ -140,9 +168,9 @@ abstract contract HugoNFTMetadataManager is HugoNFTAbstractImpl {
         string[] memory names,
         string memory cid
     )
-        public
-        override(AbstractHugoNFT)
-        onlyRole(NFT_ADMIN_ROLE)
+    public
+    override(AbstractHugoNFT)
+    onlyRole(NFT_ADMIN_ROLE)
     {
         require(
             amountOfTraits <= MAX_ADDING_TRAITS,
@@ -172,9 +200,9 @@ abstract contract HugoNFTMetadataManager is HugoNFTAbstractImpl {
      * - `msg.sender` should have {HugoNFTStorage-NFT_ADMIN} role
      */
     function updateAttributeCID(uint256 attributeId, string memory ipfsCID)
-        public
-        override(AbstractHugoNFT)
-        onlyRole(NFT_ADMIN_ROLE)
+    public
+    override(AbstractHugoNFT)
+    onlyRole(NFT_ADMIN_ROLE)
     {
         require(attributeId < currentAttributesAmount, "HugoNFT::invalid attribute id");
         require(
@@ -206,8 +234,8 @@ abstract contract HugoNFTMetadataManager is HugoNFTAbstractImpl {
         uint256 traitId,
         string memory name
     )
-        private
-        onlyRole(NFT_ADMIN_ROLE)
+    private
+    onlyRole(NFT_ADMIN_ROLE)
     {
         require(attributeId < currentAttributesAmount, "HugoNFT::invalid attribute id");
         // This kind of check has 2 pros:

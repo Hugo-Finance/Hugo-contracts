@@ -16,9 +16,9 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
         string calldata name,
         string calldata description
     )
-        external
-        virtual
-        returns (uint256 newTokenId);
+    external
+    virtual
+    returns (uint256 newTokenId);
 
     // @dev Mints a new exclusive NFT for a `to` address.
     function mintExclusive(
@@ -27,19 +27,19 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
         string calldata description,
         string calldata cid
     )
-        external
-        virtual
-        returns (uint256 newTokenId);
+    external
+    virtual
+    returns (uint256 newTokenId);
 
     // @dev Changes name of the NFT with provided tokenId.
     function changeNFTName(uint256 tokenId, string calldata name)
-        external
-        virtual;
+    external
+    virtual;
 
     // @dev Changes description of the NFT with provided tokenId.
     function changeNFTDescription(uint256 tokenId, string calldata description)
-        external
-        virtual;
+    external
+    virtual;
 
     //// ----------------------------------------------- \\\\
     //// ------------- Metadata management ------------- \\\\
@@ -53,13 +53,13 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
         string calldata cid,
         string calldata newGenerationScript
     )
-        external
-        virtual;
+    external
+    virtual;
 
     // @dev Updates multiple attribute's CIDs.
     function updateMultipleAttributesCIDs(string[] calldata CIDs)
-        external
-        virtual;
+    external
+    virtual;
 
     // @dev Adds a trait and updates CID.
     function addTrait(
@@ -68,8 +68,8 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
         string calldata name,
         string calldata cid
     )
-        external
-        virtual;
+    external
+    virtual;
 
     // @dev Adds new traits to the attribute.
     function addTraits(
@@ -78,13 +78,18 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
         string[] memory names,
         string memory cid
     )
-        external
-        virtual;
+    external
+    virtual;
 
     // @dev Updates attribute's CID.
     function updateAttributeCID(uint256 attributeId, string memory ipfsCID)
-        external
-        virtual;
+    external
+    virtual;
+
+    // @dev Changes name of the trait in the particular attribute
+    function changeTraitName(uint256 attributeId, uint256 traitId, string calldata newName)
+    external
+    virtual;
 
     //// ----------------------------------------------- \\\\
     //// ---------------- View functions --------------- \\\\
@@ -96,19 +101,19 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
      * Returns a utf-8 string of the script
      */
     function getGenerationScriptForAttributesNum(uint256 attributesNum)
-        external
-        view
-        virtual
-        returns (string memory);
+    external
+    view
+    virtual
+    returns (string memory);
 
     /**
      * @dev Returns a {HugoNFTTypes-Attribute} struct with data for `attributeId`.
      */
     function getAttributeData(uint256 attributeId)
-        external
-        view
-        virtual
-        returns (Attribute memory);
+    external
+    view
+    virtual
+    returns (Attribute memory);
 
     // @dev Returns an amount of auto-generated NFTs already minted.
     function generatedNFTsAmount() external view virtual returns (uint256);
@@ -119,10 +124,10 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
      * Returns an array of utf-8 IPFS CID strings
      */
     function getCIDsOfAttribute(uint256 attributeId)
-        external
-        view
-        virtual
-        returns (string[] memory);
+    external
+    view
+    virtual
+    returns (string[] memory);
 
     /**
      * @dev Gets traits array for an `attributeId`
@@ -130,17 +135,17 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
      * Returns an array of {HugoNFTType-Trait}s
      */
     function getTraitsOfAttribute(uint256 attributeId)
-        external
-        view
-        virtual
-        returns (HugoNFTTypes.Trait[] memory);
+    external
+    view
+    virtual
+    returns (HugoNFTTypes.Trait[] memory);
 
     // @dev Returns an array of token ids owned by `account`.
     function tokenIdsOfOwner(address account)
-        external
-        view
-        virtual
-        returns (uint256[] memory);
+    external
+    view
+    virtual
+    returns (uint256[] memory);
 
     /**
      * @dev Checks whether the provided `seed` is used.
@@ -151,16 +156,16 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
 
     // @dev Returns array of {HugoNFTType-NFT} structs, which have requested token ids.
     function getNFTs(uint256[] calldata tokenIds)
-        external
-        view
-        virtual
-        returns (HugoNFTTypes.NFT[] memory);
+    external
+    view
+    virtual
+    returns (HugoNFTTypes.NFT[] memory);
 
     function getNFT(uint256 tokenId)
-        external
-        view
-        virtual
-        returns (HugoNFTTypes.NFT memory);
+    external
+    view
+    virtual
+    returns (HugoNFTTypes.NFT memory);
 
     /**
      * @dev Gets IPFS path to `traitId` of `attributeId`
@@ -168,8 +173,8 @@ abstract contract AbstractHugoNFT is HugoNFTTypes {
      * Returns a utf-8 string of IPFS path to the requested trait.
      */
     function traitIpfsPath(uint256 attributeId, uint256 traitId)
-        external
-        view
-        virtual
-        returns (string memory);
+    external
+    view
+    virtual
+    returns (string memory);
 }
