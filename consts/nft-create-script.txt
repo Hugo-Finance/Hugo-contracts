@@ -1,0 +1,19 @@
+# python 3.8
+from PIL import Image
+# Pillow==8.3.1
+
+# example script of how to build nft from parts
+background = Image.open("./source/background/background1.png")
+body = Image.open("./source/body/body1.png")
+glasses = Image.open("./source/glasses/glasses1.png")
+headwear = Image.open("./source/headwear/head1.png")
+clothing = Image.open("./source/clothing/shirt1.png")
+accessories = Image.open("./source/accessories/scarf1.png")
+
+background.paste(body, None, body)
+background.paste(clothing, None, clothing)
+background.paste(accessories, None, accessories)
+background.paste(headwear, None, headwear)
+background.paste(glasses, None, glasses)
+
+background.save("result/final.png", "PNG")

@@ -1,4 +1,7 @@
 const names = require('./../consts/names.json');
+const fs = require('fs')
+
+const generationScript = fs.readFileSync('./consts/nft-create-script.txt', 'utf-8');
 
 // testnet
 const ATTRIBUTE_NAMES = ["Background", "Body", "Clothing", "Accessories", "Headwear", "Glasses"];
@@ -17,9 +20,9 @@ const TRAITS_NAMES = ATTRIBUTE_NAMES.map((attr_name) => {
 
 const TRAIT_NUMS = [12, 15, 29, 26, 27, 15];
 const constructorParams = {
-    baseURI: "https://app.hugo.finance/api/nft/",
+    baseURI: "https://app.hugo.finance/api/nft/metadata/",
     initialAmountOfAttributes: ATTRIBUTE_NAMES.length,
-    generationScript: "some py script",
+    generationScript: generationScript,
     traitAmountForEachAttribute: TRAIT_NUMS,
     traitNamesForEachAttribute: TRAITS_NAMES,
     CIDsForEachAttribute: CIDs,
